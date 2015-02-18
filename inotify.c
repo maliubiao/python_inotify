@@ -113,10 +113,13 @@ inotify_read_event(PyObject *object, PyObject *args)
 		PyDict_SetItemString(event_dict, "name", PyString_FromStringAndSize(event->name, event->len)); 
 
 		/* invoke callback, ignore ret */
-		PyObject_CallFunction(callback, "(O)", event_dict);
-		
+		PyObject *cret = PyObject_CallFunction(callback,
+				"(O)", event_dict);
 		Py_XDECREF(event_dict); 
-
+		if (cret == NULL) {
+			goto failed;
+		}
+		Py_XDECREF(cret);	
 		offset = offset + sizeof(*event) + event->len; 
 	} 
 
